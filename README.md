@@ -1,2 +1,3 @@
 # HealthoAssist
 HealthoAssist is an Artificial Intelligence-powered Predictive Treatment and Medical Recommendation System 
+The system accepts patient-reported symptoms as input through an web-based interface and processes them through a Support Vector Machine (SVM) classifier — trained on a curated disease-symptom dataset containing 4,920 records spanning 41 diseases and 132 unique symptoms — to predict the most probable disease with a calibrated confidence score. The SVM employs an RBF (Radial Basis Function) kernel with One-vs-Rest multi-class strategy and probability calibration via Platt scaling (CalibratedClassifierCV), achieving over 82% test accuracy
