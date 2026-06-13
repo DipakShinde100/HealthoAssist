@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Analytics Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center p-3">
+                <h3 class="text-primary">{{ total_patients }}</h3>
+                <p class="text-muted">Patients</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3">
+                <h3 class="text-success">{{ total_doctors }}</h3>
+                <p class="text-muted">Doctors</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3">
+                <h3 class="text-info">{{ total_consultations }}</h3>
+                <p class="text-muted">Consultations</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-3">
+                <h3 class="text-warning">{{ "%.1f"|format((avg_accuracy + avg_medication + avg_experience) / 3) }}/5</h3>
+                <p class="text-muted">Avg. Feedback</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Doctor Form -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white"><h5>Create Doctor Account</h5></div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.create_doctor') }}" class="row g-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="col-md-4"><input type="text" class="form-control" name="name" placeholder="Doctor Name" required></div>
+                <div class="col-md-3"><input type="email" class="form-control" name="email" placeholder="Email" required></div>
+                <div class="col-md-3"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-success w-100">Create</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Latest Feedback -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Latest Patient Feedback</h5>
+        </div>
+        <div class="card-body">
+            {% if all_feedback %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead><tr><th>Patient</th><th>Consultation</th><th>Accuracy</th><th>Medication</th><th>Experience</th><th>Comments</th></tr></thead>
+                    <tbody>
+                        {% for f in all_feedback %}
+                        <tr>
+                            <td>{{ f.patient.name }}</td>
+                            <td>{{ f.consultation.predicted_disease }}</td>
+                            <td>{{ '⭐' * f.accuracy_rating }}</td>
+                            <td>{{ '⭐' * f.medication_rating }}</td>
+                            <td>{{ '⭐' * f.experience_rating }}</td>
+                            <td><small>{{ f.comments or '' }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No feedback received yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Manage Users</h5>
+            <form class="d-flex" method="GET" action="{{ url_for('admin.dashboard') }}">
+                <input class="form-control form-control-sm me-2" type="search" placeholder="Search users" name="search" value="{{ search_query or '' }}">
+                <button class="btn btn-light btn-sm" type="submit">Search</button>
+            </form>
+        </div>
+        <div class="card-body">
+            {% if all_users %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Registered</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if user.role == 'patient' else 'success' if user.role == 'doctor' else 'danger' }}">
+                                    {{ user.role|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Blocked</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                {% if user.role != 'admin' %}
+                                <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if user.is_active %}
+                                        <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-success btn-sm">Unblock</button>
+                                    {% endif %}
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">No users found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

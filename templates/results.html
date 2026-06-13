@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Results - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2 class="mb-3">Consultation Result</h2>
+
+    <!-- Symptoms -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            Symptoms Entered
+        </div>
+        <div class="card-body">
+            {% for symptom in selected_symptoms %}
+                <span class="badge bg-info text-dark me-1">{{ symptom }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Prediction -->
+    <div class="card mb-3">
+        <div class="card-header bg-success text-white">
+            Disease Prediction
+        </div>
+        <div class="card-body">
+            <h4>{{ prediction.predicted_disease }}</h4>
+            <p><strong>Confidence:</strong> {{ prediction.confidence_pct }}%</p>
+            <p><strong>Referral Required:</strong> 
+                {% if prediction.referral_flag %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card mb-3">
+        <div class="card-header bg-secondary text-white">
+            Disease Description
+        </div>
+        <div class="card-body">
+            <p>{{ recommendations.description }}</p>
+        </div>
+    </div>
+
+    <!-- Medications -->
+    <div class="card mb-3">
+        <div class="card-header bg-warning">
+            Recommended Medications
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for med in recommendations.medications %}
+                    <li>{{ med }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Diet -->
+    <div class="card mb-3">
+        <div class="card-header bg-info text-white">
+            Diet Recommendations
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for diet in recommendations.diet %}
+                    <li>{{ diet }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Precautions -->
+    <div class="card mb-3">
+        <div class="card-header bg-danger text-white">
+            Precautions
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for p in recommendations.precautions %}
+                    <li>{{ p }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Workout -->
+    <div class="card mb-3">
+        <div class="card-header bg-dark text-white">
+            Workout Suggestions
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for w in recommendations.workout %}
+                    <li>{{ w }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Safety Warnings -->
+    {% if safety.has_warnings %}
+    <div class="card mb-3">
+        <div class="card-header bg-danger text-white">
+            Safety Warnings
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for warn in safety.warnings %}
+                    <li>{{ warn.warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Feedback Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Patient Feedback</h5>
+        </div>
+        <div class="card-body">
+            
+            <!-- We put CSS right here so it works perfectly -->
+            <style>
+                .star-rating {
+                    display: inline-flex;
+                    flex-direction: row-reverse;
+                }
+                .star-rating input {
+                    display: none;
+                }
+                .star-rating label {
+                    font-size: 2.5rem;
+                    color: #d3d3d3; /* Gray empty star */
+                    cursor: pointer;
+                    transition: color 0.2s;
+                    line-height: 1;
+                }
+                .star-rating label:hover,
+                .star-rating label:hover ~ label,
+                .star-rating input:checked ~ label {
+                    color: #ffc107; /* Yellow filled star */
+                }
+            </style>
+
+            {% if consultation.feedback %}
+                <div class="alert alert-success mb-0">
+                    <h6 class="alert-heading">Thank you for your feedback!</h6>
+                    <hr>
+                    <p class="mb-1"><strong>Accuracy:</strong> <span style="color:#ffc107;">{{ '★' * consultation.feedback.accuracy_rating }}</span></p>
+                    <p class="mb-1"><strong>Medication:</strong> <span style="color:#ffc107;">{{ '★' * consultation.feedback.medication_rating }}</span></p>
+                    <p class="mb-1"><strong>Experience:</strong> <span style="color:#ffc107;">{{ '★' * consultation.feedback.experience_rating }}</span></p>
+                    <p class="mb-0"><strong>Comments:</strong> {{ consultation.feedback.comments or 'No comments provided.' }}</p>
+                </div>
+            {% else %}
+                <p class="text-muted">Help us improve! Please rate your experience.</p>
+                
+                <form method="POST" action="{{ url_for('patient.submit_feedback', consultation_id=consultation.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-0">Prediction Accuracy</label><br>
+                        <div class="star-rating">
+                            <!-- Notice we added 'checked' to value 5 so it never blocks the form -->
+                            <input type="radio" name="accuracy_rating" value="5" id="acc5" checked><label for="acc5">★</label>
+                            <input type="radio" name="accuracy_rating" value="4" id="acc4"><label for="acc4">★</label>
+                            <input type="radio" name="accuracy_rating" value="3" id="acc3"><label for="acc3">★</label>
+                            <input type="radio" name="accuracy_rating" value="2" id="acc2"><label for="acc2">★</label>
+                            <input type="radio" name="accuracy_rating" value="1" id="acc1"><label for="acc1">★</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-0">Medication Relevance</label><br>
+                        <div class="star-rating">
+                            <input type="radio" name="medication_rating" value="5" id="med5" checked><label for="med5">★</label>
+                            <input type="radio" name="medication_rating" value="4" id="med4"><label for="med4">★</label>
+                            <input type="radio" name="medication_rating" value="3" id="med3"><label for="med3">★</label>
+                            <input type="radio" name="medication_rating" value="2" id="med2"><label for="med2">★</label>
+                            <input type="radio" name="medication_rating" value="1" id="med1"><label for="med1">★</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold mb-0">Overall Experience</label><br>
+                        <div class="star-rating">
+                            <input type="radio" name="experience_rating" value="5" id="exp5" checked><label for="exp5">★</label>
+                            <input type="radio" name="experience_rating" value="4" id="exp4"><label for="exp4">★</label>
+                            <input type="radio" name="experience_rating" value="3" id="exp3"><label for="exp3">★</label>
+                            <input type="radio" name="experience_rating" value="2" id="exp2"><label for="exp2">★</label>
+                            <input type="radio" name="experience_rating" value="1" id="exp1"><label for="exp1">★</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Additional Comments</label>
+                        <textarea class="form-control" name="comments" rows="2" placeholder="What did you like? What can be improved?"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Submit Feedback</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Buttons -->
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('patient.download_report', consultation_id=consultation.id) }}" 
+           class="btn btn-success me-2">
+            Download PDF Report
+        </a>
+
+        <a href="{{ url_for('patient.predict') }}" class="btn btn-primary me-2">
+            New Consultation
+        </a>
+
+        <a href="{{ url_for('patient.dashboard') }}" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

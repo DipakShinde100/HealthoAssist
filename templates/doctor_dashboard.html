@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Doctor Dashboard</h2>
+    <p class="text-muted">Welcome, Dr. {{ current_user.name }}</p>
+
+    <!-- Analytics Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center p-4">
+                <h3 class="text-primary">{{ total_patients }}</h3>
+                <p class="text-muted">Total Patients</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4">
+                <h3 class="text-success">{{ total_consultations }}</h3>
+                <p class="text-muted">Total Consultations</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center p-4">
+                <h3 class="text-warning">{{ pending_reviews|length }}</h3>
+                <p class="text-muted">Pending Reviews</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-white"><h5 class="mb-0">Top 5 Diagnosed Diseases</h5></div>
+                <div class="card-body">
+                    {% if disease_counts %}
+                        <canvas id="diseaseChart"></canvas>
+                    {% else %}
+                        <p class="text-muted text-center">No disease data yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Reviews -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">Pending Reviews</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_reviews %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th>Date</th><th>Patient</th><th>Disease</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for c in pending_reviews %}
+                        <tr>
+                            <td>{{ c.consulted_at.strftime('%d %b %Y') }}</td>
+                            <td>{{ c.patient.name }}</td>
+                            <td>{{ c.predicted_disease or 'Referral' }}</td>
+                            <td>
+                                <a href="{{ url_for('doctor.view_patient', patient_id=c.patient_id) }}" 
+                                   class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">No pending reviews.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Patient List with Search -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Patients</h5>
+            <form class="d-flex" method="GET" action="{{ url_for('doctor.dashboard') }}">
+                <input class="form-control form-control-sm me-2" type="search" 
+                       placeholder="Search by name or email" name="search"
+                       value="{{ search_query or '' }}">
+                <button class="btn btn-light btn-sm" type="submit">Search</button>
+            </form>
+        </div>
+        <div class="card-body">
+            {% if patients %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead><tr><th>Name</th><th>Email</th><th>Gender</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for p in patients %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.email }}</td>
+                            <td>{{ p.gender or '-' }}</td>
+                            <td>
+                                {% if p.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Blocked</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('doctor.view_patient', patient_id=p.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">View Records</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">No patients found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var diseaseData = {{ disease_counts|tojson }};
+    if (diseaseData.length > 0) {
+        var labels = diseaseData.map(item => item[0]);
+        var values = diseaseData.map(item => item[1]);
+        
+        new Chart(document.getElementById('diseaseChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Number of Consultations',
+                    data: values,
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

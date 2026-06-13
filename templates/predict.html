@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Check Symptoms - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h3 class="text-center mb-4">Symptom Checker</h3>
+                <p class="text-center text-muted">Select your symptoms below (minimum 3)</p>
+
+                <form method="POST" action="{{ url_for('patient.predict') }}" id="symptomForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Select Your Symptoms</label>
+                        <select class="form-select" id="symptoms" name="symptoms" multiple="multiple" 
+                                style="width: 100%;" required>
+                            {% for symptom in symptoms %}
+                                <option value="{{ symptom }}">{{ symptom|title }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Search and select at least 3 symptoms</small>
+                    </div>
+                    
+                    <div id="selectedCount" class="mb-3 text-center">
+                        <span class="badge bg-secondary">0 symptoms selected</span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 btn-lg" id="predictBtn">
+                        Get Prediction
+                    </button>
+                </form>
+            </div>
+
+            <div class="alert alert-warning mt-3">
+                <strong>Important:</strong> This tool provides AI-based predictions for informational purposes only.
+                Always consult a qualified healthcare professional.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#symptoms').select2({
+        placeholder: 'Search and select symptoms...',
+        allowClear: true,
+        closeOnSelect: false,
+        width: '100%'
+    });
+
+    $('#symptoms').on('change', function() {
+        var count = $(this).val() ? $(this).val().length : 0;
+        var badge = count >= 3 ? 'bg-success' : 'bg-warning';
+        var text = count + ' symptom(s) selected' + (count < 3 ? ' - need at least 3' : ' OK');
+        $('#selectedCount').html('<span class="badge ' + badge + '">' + text + '</span>');
+    });
+
+    $('#symptomForm').on('submit', function(e) {
+        var count = $('#symptoms').val() ? $('#symptoms').val().length : 0;
+        if (count < 3) {
+            e.preventDefault();
+            alert('Please select at least 3 symptoms.');
+            return false;
+        }
+        $('#predictBtn').html('Analyzing...').prop('disabled', true);
+    });
+});
+</script>
+{% endblock %}

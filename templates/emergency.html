@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Emergency - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            <!-- Emergency Header -->
+            <div class="card mb-4" style="background: #dc3545; color: white;">
+                <div class="card-body text-center">
+                    <h1>🚨 Emergency Information</h1>
+                    <p class="lead mb-0">Important helpline numbers and emergency guidelines</p>
+                </div>
+            </div>
+
+            <!-- Emergency Numbers -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">📞 Emergency Helpline Numbers (India)</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead><tr><th>Service</th><th>Number</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr class="table-danger">
+                                <td><strong>🚑 Emergency</strong></td>
+                                <td><h4 class="text-danger mb-0">112</h4></td>
+                                <td>National Emergency Number</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🏥 Ambulance</strong></td>
+                                <td><h5 class="text-primary mb-0">108</h5></td>
+                                <td>Free Ambulance Service</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🏥 AIIMS</strong></td>
+                                <td><h5 class="text-primary mb-0">011-26588500</h5></td>
+                                <td>AIIMS Delhi Emergency</td>
+                            </tr>
+                            <tr>
+                                <td><strong>💊 Poison Control</strong></td>
+                                <td><h5 class="text-warning mb-0">1066</h5></td>
+                                <td>National Poison Helpline</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🧠 Mental Health</strong></td>
+                                <td><h5 class="text-info mb-0">08046110007</h5></td>
+                                <td>NIMHANS Helpline</td>
+                            </tr>
+                            <tr>
+                                <td><strong>👩 Women Helpline</strong></td>
+                                <td><h5 class="text-success mb-0">181</h5></td>
+                                <td>Women Helpline (All India)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>👶 Child Helpline</strong></td>
+                                <td><h5 class="text-success mb-0">1098</h5></td>
+                                <td>Child Helpline India</td>
+                            </tr>
+                            <tr>
+                                <td><strong>🚒 Fire</strong></td>
+                                <td><h5 class="text-danger mb-0">101</h5></td>
+                                <td>Fire Brigade</td>
+                            </tr>
+                            <tr>
+                                <td><strong>👮 Police</strong></td>
+                                <td><h5 class="text-dark mb-0">100</h5></td>
+                                <td>Police Emergency</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- First Aid Tips -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">🩹 Basic First Aid Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-danger">
+                                <div class="card-body">
+                                    <h6 class="text-danger">🫀 Heart Attack Signs</h6>
+                                    <ul class="small">
+                                        <li>Chest pain or pressure</li>
+                                        <li>Shortness of breath</li>
+                                        <li>Pain in arm, jaw, or back</li>
+                                        <li><strong>Action:</strong> Call 112, chew aspirin if available</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-warning">
+                                <div class="card-body">
+                                    <h6 class="text-warning">🧠 Stroke Signs (FAST)</h6>
+                                    <ul class="small">
+                                        <li><strong>F</strong>ace drooping</li>
+                                        <li><strong>A</strong>rm weakness</li>
+                                        <li><strong>S</strong>peech difficulty</li>
+                                        <li><strong>T</strong>ime to call 112</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-info">
+                                <div class="card-body">
+                                    <h6 class="text-info">🤒 High Fever (>103°F)</h6>
+                                    <ul class="small">
+                                        <li>Apply cold compress</li>
+                                        <li>Give paracetamol</li>
+                                        <li>Keep hydrated</li>
+                                        <li>Seek medical help if persistent</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3 border-success">
+                                <div class="card-body">
+                                    <h6 class="text-success">🩸 Severe Bleeding</h6>
+                                    <ul class="small">
+                                        <li>Apply direct pressure</li>
+                                        <li>Elevate the wound</li>
+                                        <li>Do NOT remove embedded objects</li>
+                                        <li>Call 108 for ambulance</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="alert alert-danger">
+                <strong>⚠️ Important:</strong> In case of any medical emergency, 
+                <strong>call 112 immediately</strong>. Do not rely solely on this application. 
+                Always seek professional medical help.
+            </div>
+
+            <div class="text-center mb-4">
+                <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

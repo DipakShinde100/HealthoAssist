@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My Profile - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <div class="card-body">
+                    <h3 class="mb-4"><i class="bi bi-person-gear"></i> My Profile</h3>
+
+                    <form method="POST" action="{{ url_for('patient.profile') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" name="name" value="{{ current_user.name }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email (cannot change)</label>
+                                <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" name="phone"
+                                    value="{{ current_user.phone or '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" name="date_of_birth"
+                                    value="{{ current_user.date_of_birth or '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Blood Group</label>
+                                <select class="form-select" name="blood_group">
+                                    <option value="">Select</option>
+                                    {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                                    <option value="{{ bg }}" {% if current_user.blood_group==bg %}selected{% endif %}>{{
+                                        bg }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Known Allergies</label>
+                            <input type="text" class="form-control" name="allergies"
+                                value="{{ current_user.allergies or '' }}"
+                                placeholder="e.g., Penicillin, Aspirin (comma-separated)">
+                            <small class="text-muted">This helps us check for drug safety.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Current Medications</label>
+                            <input type="text" class="form-control" name="current_medications"
+                                value="{{ current_user.current_medications or '' }}"
+                                placeholder="e.g., Metformin, Lisinopril (comma-separated)">
+                            <small class="text-muted">Used for drug interaction checks.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Chronic Conditions</label>
+                            <input type="text" class="form-control" name="chronic_conditions"
+                                value="{{ current_user.chronic_conditions or '' }}"
+                                placeholder="e.g., Diabetes, Hypertension (comma-separated)">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Update Profile
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

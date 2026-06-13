@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Consultation History - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="bi bi-clock-history"></i> Consultation History</h2>
+    <p class="text-muted">All your past consultations and predictions</p>
+
+    {% if consultations.items %}
+    {% for c in consultations.items %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <small class="text-muted">{{ c.consulted_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+                </div>
+                <div class="col-md-3">
+                    {% if c.referral_flag %}
+                    <span class="badge bg-warning text-dark">Referral</span>
+                    {% else %}
+                    <strong>{{ c.predicted_disease }}</strong>
+                    {% endif %}
+                </div>
+                <div class="col-md-2">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar {% if c.confidence_score and c.confidence_score >= 0.7 %}bg-success{% else %}bg-warning{% endif %}"
+                            style="width: {{ (c.confidence_score or 0) * 100 }}%;"></div>
+                    </div>
+                    <small>{{ "%.1f"|format((c.confidence_score or 0) * 100) }}%</small>
+                </div>
+                <div class="col-md-2">
+                    {% if c.doctor_reviewed %}
+                    <span class="badge bg-success">Reviewed</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Pending</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 text-end">
+                    <a href="{{ url_for('patient.view_consultation', consultation_id=c.id) }}"
+                        class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+            <div class="mt-2">
+                {% for symptom in c.get_symptoms_list()[:5] %}
+                <span class="symptom-tag">{{ symptom | title }}</span>
+                {% endfor %}
+                {% if c.get_symptoms_list()|length > 5 %}
+                <span class="text-muted">+{{ c.get_symptoms_list()|length - 5 }} more</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if consultations.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('patient.history', page=consultations.prev_num) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in consultations.iter_pages() %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == consultations.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('patient.history', page=page_num) }}">{{ page_num }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if consultations.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('patient.history', page=consultations.next_num) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-journal-x display-3 text-muted"></i>
+        <p class="mt-3 text-muted">No consultation history yet.</p>
+        <a href="{{ url_for('patient.predict') }}" class="btn btn-primary">
+            <i class="bi bi-search-heart"></i> Check Symptoms Now
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

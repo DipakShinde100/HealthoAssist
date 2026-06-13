@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - HealthoAssist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Welcome, {{ current_user.name }}! 👋</h2>
+            <p class="text-muted">Your personal health dashboard</p>
+        </div>
+    </div>
+
+    <!-- Health Tip of the Day -->
+    <div class="card mb-4" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+        <div class="card-body">
+            <h5>💡 Health Tip of the Day</h5>
+            <p id="healthTip" class="mb-0" style="font-size: 1.1rem;"></p>
+        </div>
+    </div>
+
+    <!-- Quick Action Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('patient.predict') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white p-3 text-center h-100">
+                    <h1>🩺</h1>
+                    <h5>Check Symptoms</h5>
+                    <small>AI Disease Prediction</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('patient.history') }}" class="text-decoration-none">
+                <div class="card bg-success text-white p-3 text-center h-100">
+                    <h1>📋</h1>
+                    <h5>History</h5>
+                    <small>{{ total_consultations }} Consultation(s)</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('patient.bmi_calculator') }}" class="text-decoration-none">
+                <div class="card bg-info text-white p-3 text-center h-100">
+                    <h1>⚖️</h1>
+                    <h5>BMI Calculator</h5>
+                    <small>Check Your BMI</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('patient.emergency') }}" class="text-decoration-none">
+                <div class="card bg-danger text-white p-3 text-center h-100">
+                    <h1>🚨</h1>
+                    <h5>Emergency</h5>
+                    <small>SOS & Helplines</small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Health Score + Stats Row -->
+    <div class="row g-4 mb-4">
+        <!-- Health Score -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-white"><h5 class="mb-0">💯 Health Score</h5></div>
+                <div class="card-body text-center">
+                    <div id="healthScoreContainer">
+                        <canvas id="healthScoreChart" width="200" height="200"></canvas>
+                        <h2 id="healthScoreText" class="mt-2">--</h2>
+                        <p id="healthScoreLabel" class="text-muted">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-white"><h5 class="mb-0">📊 Quick Stats</h5></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Total Consultations</strong>
+                        <h3 id="statTotal" class="text-primary">--</h3>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Most Common Disease</strong>
+                        <h5 id="statCommon" class="text-warning">--</h5>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Avg. Confidence</strong>
+                        <h5 id="statConfidence" class="text-success">--</h5>
+                    </div>
+                    <div>
+                        <strong>Doctor Reviewed</strong>
+                        <h5 id="statReviewed" class="text-info">--</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease Frequency Chart -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-white"><h5 class="mb-0">🏥 Disease Frequency</h5></div>
+                <div class="card-body">
+                    <canvas id="diseaseChart" height="250"></canvas>
+                    <p id="noDiseaseData" class="text-center text-muted mt-3" style="display:none;">No data yet. Check your symptoms first!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultation Trend Chart -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white"><h5 class="mb-0">📈 Consultation Trend</h5></div>
+                <div class="card-body">
+                    <canvas id="trendChart" height="150"></canvas>
+                    <p id="noTrendData" class="text-center text-muted mt-3" style="display:none;">No data yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white"><h5 class="mb-0">👤 Profile Summary</h5></div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ current_user.name }}</p>
+                    <p><strong>Email:</strong> {{ current_user.email }}</p>
+                    <p><strong>Gender:</strong> {{ current_user.gender or 'Not set' }}</p>
+                    <p><strong>Blood Group:</strong> {{ current_user.blood_group or 'Not set' }}</p>
+                    <p><strong>Allergies:</strong> {{ current_user.allergies or 'None' }}</p>
+                    <p><strong>Chronic Conditions:</strong> {{ current_user.chronic_conditions or 'None' }}</p>
+                    <a href="{{ url_for('patient.profile') }}" class="btn btn-outline-primary btn-sm w-100">Update Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Consultations -->
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">🕐 Recent Consultations</h5>
+        </div>
+        <div class="card-body">
+            {% if recent_consultations %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr><th>Date</th><th>Disease</th><th>Confidence</th><th>Status</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in recent_consultations %}
+                        <tr>
+                            <td>{{ c.consulted_at.strftime('%d %b %Y') }}</td>
+                            <td><strong>{{ c.predicted_disease or 'Referral' }}</strong></td>
+                            <td>
+                                <div class="progress" style="height: 8px; width: 80px;">
+                                    <div class="progress-bar {% if c.confidence_score and c.confidence_score >= 0.7 %}bg-success{% elif c.confidence_score and c.confidence_score >= 0.4 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         style="width: {{ (c.confidence_score or 0) * 100 }}%;"></div>
+                                </div>
+                                <small>{{ "%.1f"|format((c.confidence_score or 0) * 100) }}%</small>
+                            </td>
+                            <td>
+                                {% if c.doctor_reviewed %}
+                                    <span class="badge bg-success">Reviewed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('patient.view_consultation', consultation_id=c.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center py-4">
+                    <h1>🩺</h1>
+                    <p class="text-muted">No consultations yet.</p>
+                    <a href="{{ url_for('patient.predict') }}" class="btn btn-primary">Check Symptoms Now</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Health Tips
+var healthTips = [
+    "Drink at least 8 glasses of water daily to stay hydrated.",
+    "Regular exercise for 30 minutes can reduce the risk of heart disease by 50%.",
+    "Getting 7-8 hours of sleep is essential for your immune system.",
+    "Eating 5 servings of fruits and vegetables daily can prevent many diseases.",
+    "Washing hands frequently can prevent up to 80% of infectious diseases.",
+    "Regular health checkups can detect diseases early and save lives.",
+    "Stress management through meditation can lower blood pressure significantly.",
+    "Avoid processed foods — they increase risk of diabetes and heart disease.",
+    "Walking 10,000 steps daily can improve cardiovascular health.",
+    "Maintain good posture to prevent back pain and cervical issues.",
+    "Limit screen time to reduce eye strain and improve sleep quality.",
+    "Include probiotics in your diet for better gut health.",
+    "Avoid smoking — it affects every organ in your body.",
+    "Regular dental checkups can prevent heart disease and infections.",
+    "Deep breathing exercises for 5 minutes can reduce anxiety instantly."
+];
+
+var randomTip = healthTips[Math.floor(Math.random() * healthTips.length)];
+document.getElementById('healthTip').textContent = randomTip;
+
+// Load Dashboard Stats
+fetch('/api/dashboard-stats')
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        // Update Stats
+        document.getElementById('statTotal').textContent = data.total_consultations;
+        document.getElementById('statCommon').textContent = data.most_common_disease;
+        document.getElementById('statConfidence').textContent = data.avg_confidence + '%';
+        document.getElementById('statReviewed').textContent = data.doctor_review_percentage + '%';
+
+        // Health Score
+        var score = data.health_score;
+        document.getElementById('healthScoreText').textContent = score + '/100';
+        
+        var scoreColor = '#198754';
+        var scoreLabel = 'Excellent';
+        if (score < 40) { scoreColor = '#dc3545'; scoreLabel = 'Needs Attention'; }
+        else if (score < 60) { scoreColor = '#ffc107'; scoreLabel = 'Average'; }
+        else if (score < 80) { scoreColor = '#0dcaf0'; scoreLabel = 'Good'; }
+        
+        document.getElementById('healthScoreText').style.color = scoreColor;
+        document.getElementById('healthScoreLabel').textContent = scoreLabel;
+
+        // Health Score Doughnut Chart
+        new Chart(document.getElementById('healthScoreChart'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [score, 100 - score],
+                    backgroundColor: [scoreColor, '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '75%',
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Disease Frequency Chart
+        var diseaseData = data.disease_frequency;
+        var diseaseLabels = Object.keys(diseaseData);
+        var diseaseValues = Object.values(diseaseData);
+
+        if (diseaseLabels.length > 0) {
+            var colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', 
+                         '#00f2fe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
+            
+            new Chart(document.getElementById('diseaseChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: diseaseLabels,
+                    datasets: [{
+                        data: diseaseValues,
+                        backgroundColor: colors.slice(0, diseaseLabels.length),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 10 } } }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('noDiseaseData').style.display = 'block';
+        }
+
+        // Monthly Trend Chart
+        var monthlyData = data.monthly_consultations;
+        var monthLabels = Object.keys(monthlyData);
+        var monthValues = Object.values(monthlyData);
+
+        if (monthLabels.length > 0) {
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Consultations',
+                        data: monthValues,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#764ba2',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('noTrendData').style.display = 'block';
+        }
+    })
+    .catch(function(err) {
+        console.log('Stats error:', err);
+    });
+</script>
+{% endblock %}
